@@ -1,0 +1,522 @@
+:root {
+  --umich-blue: #00274C;
+  --umich-maize: #FFCB05;
+  --umich-light-blue: #3C4F6D;
+  --umich-light-maize: #FFE599;
+  --umich-gray: #F4F4F4;
+}
+
+body {
+  font-family: 'Helvetica Neue', Arial, sans-serif;
+  padding: 20px;
+  background: var(--umich-gray);
+  max-width: 1200px;
+  margin: 0 auto;
+  color: var(--umich-blue);
+}
+
+h1 {
+  color: var(--umich-blue);
+  text-align: center;
+  margin-bottom: 20px;
+  font-size: 2.5em;
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+#map {
+  height: 600px;
+  width: 100%;
+  margin-top: 20px;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  border: 3px solid var(--umich-blue);
+}
+
+#filters {
+  background: white;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  margin-bottom: 20px;
+  border: 2px solid var(--umich-blue);
+}
+
+#filters label {
+  margin-right: 25px;
+  cursor: pointer;
+  user-select: none;
+  font-weight: 500;
+  color: var(--umich-blue);
+  display: inline-flex;
+  align-items: center;
+  padding: 8px 12px;
+  border-radius: 6px;
+  transition: background-color 0.2s;
+}
+
+#filters label:hover {
+  background-color: var(--umich-light-maize);
+}
+
+#filters input[type="checkbox"] {
+  margin-right: 8px;
+  width: 18px;
+  height: 18px;
+  accent-color: var(--umich-blue);
+}
+
+.button-container {
+  display: flex;
+  gap: 15px;
+  margin-top: 20px;
+  justify-content: center;
+}
+
+.umich-button {
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-weight: bold;
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: none;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.umich-button.primary {
+  background: var(--umich-blue);
+  color: white;
+}
+
+.umich-button.primary:hover {
+  background: var(--umich-light-blue);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+
+.umich-button.secondary {
+  background: var(--umich-maize);
+  color: var(--umich-blue);
+}
+
+.umich-button.secondary:hover {
+  background: var(--umich-light-maize);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+
+/* Popup Styling */
+.umich-popup {
+  padding: 10px;
+  max-width: 300px;
+}
+
+.umich-popup h3 {
+  color: var(--umich-blue);
+  margin: 0 0 10px 0;
+  font-size: 18px;
+  border-bottom: 2px solid var(--umich-maize);
+  padding-bottom: 5px;
+}
+
+.popup-features {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-bottom: 10px;
+}
+
+.feature-tag {
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: bold;
+  color: white;
+}
+
+.feature-tag.open-late {
+  background: var(--umich-blue);
+}
+
+.feature-tag.quiet {
+  background: var(--umich-light-blue);
+}
+
+.feature-tag.food {
+  background: #2E7D32;
+}
+
+.feature-tag.outlets {
+  background: #C62828;
+}
+
+.popup-description {
+  font-size: 14px;
+  line-height: 1.4;
+  color: #333;
+}
+
+/* Custom Leaflet Popup Styling */
+.leaflet-popup-content-wrapper {
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+
+.leaflet-popup-tip {
+  background: white;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  body {
+    padding: 10px;
+  }
+
+  h1 {
+    font-size: 1.8em;
+  }
+
+  #filters label {
+    margin-right: 10px;
+    font-size: 14px;
+  }
+
+  .button-container {
+    flex-direction: column;
+  }
+
+  .umich-button {
+    width: 100%;
+  }
+}
+
+/* Selected Spot Marker Animation */
+.selected-spot-marker {
+  position: relative;
+}
+
+.selected-spot-pulse {
+  position: absolute;
+  width: 40px;
+  height: 40px;
+  background: var(--umich-maize);
+  border-radius: 50%;
+  opacity: 0.6;
+  animation: pulse 1.5s ease-out infinite;
+  transform: translate(-50%, -50%);
+}
+
+@keyframes pulse {
+  0% {
+    transform: translate(-50%, -50%) scale(0.5);
+    opacity: 0.6;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(2);
+    opacity: 0;
+  }
+}
+
+/* Custom Alert Box */
+.spot-alert {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  animation: fadeIn 0.3s ease-out;
+}
+
+.spot-alert-content {
+  background: white;
+  padding: 25px;
+  border-radius: 12px;
+  max-width: 500px;
+  width: 90%;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  border: 3px solid var(--umich-blue);
+  animation: slideUp 0.3s ease-out;
+}
+
+.spot-alert-content h2 {
+  color: var(--umich-blue);
+  margin: 10px 0;
+  font-size: 24px;
+  text-align: center;
+}
+
+.spot-alert-content h3 {
+  color: var(--umich-light-blue);
+  margin: 0;
+  font-size: 16px;
+  text-align: center;
+}
+
+.spot-features {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+  margin: 15px 0;
+}
+
+.spot-description {
+  margin: 20px 0;
+  padding: 15px;
+  background: var(--umich-gray);
+  border-radius: 8px;
+  font-size: 14px;
+  line-height: 1.6;
+  white-space: pre-line;
+}
+
+.close-alert {
+  width: 100%;
+  margin-top: 15px;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* Make sure the alert is responsive */
+@media (max-width: 768px) {
+  .spot-alert-content {
+    width: 95%;
+    padding: 15px;
+  }
+
+  .spot-alert-content h2 {
+    font-size: 20px;
+  }
+
+  .spot-alert-content h3 {
+    font-size: 14px;
+  }
+
+  .spot-description {
+    font-size: 13px;
+    padding: 10px;
+  }
+}
+
+/* Study Stats Container */
+.study-stats {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: white;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  margin-bottom: 20px;
+  border: 2px solid var(--umich-blue);
+}
+
+/* Streak Display */
+.streak-display {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 20px;
+  background: var(--umich-light-maize);
+  border-radius: 8px;
+  border: 2px solid var(--umich-maize);
+}
+
+.streak-icon {
+  font-size: 24px;
+}
+
+.streak-count {
+  font-size: 24px;
+  font-weight: bold;
+  color: var(--umich-blue);
+}
+
+.streak-text {
+  font-size: 16px;
+  color: var(--umich-blue);
+}
+
+/* Timer Container */
+.timer-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 15px;
+  padding: 15px;
+  background: var(--umich-gray);
+  border-radius: 8px;
+  min-width: 300px;
+}
+
+.timer-display {
+  font-size: 48px;
+  font-weight: bold;
+  color: var(--umich-blue);
+  font-family: monospace;
+  text-align: center;
+}
+
+.timer-controls {
+  display: flex;
+  gap: 10px;
+}
+
+.timer-controls button {
+  min-width: 80px;
+}
+
+.timer-status {
+  font-size: 14px;
+  color: var(--umich-light-blue);
+  text-align: center;
+  font-style: italic;
+}
+
+/* Timer Mode Controls */
+.timer-mode-controls {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.timer-mode-controls button {
+  flex: 1;
+  min-width: 100px;
+  opacity: 0.7;
+  transition: all 0.2s;
+}
+
+.timer-mode-controls button.active {
+  opacity: 1;
+  background: var(--umich-blue);
+  color: white;
+}
+
+/* Timer Duration Controls */
+.timer-duration-controls {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 15px;
+}
+
+.custom-duration {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: white;
+  padding: 8px 12px;
+  border-radius: 6px;
+  border: 2px solid var(--umich-blue);
+}
+
+.duration-input {
+  width: 60px;
+  padding: 4px 8px;
+  border: 1px solid var(--umich-light-blue);
+  border-radius: 4px;
+  font-size: 16px;
+  font-weight: bold;
+  color: var(--umich-blue);
+  text-align: center;
+}
+
+.duration-input:focus {
+  outline: none;
+  border-color: var(--umich-blue);
+  box-shadow: 0 0 0 2px var(--umich-light-maize);
+}
+
+.duration-label {
+  color: var(--umich-blue);
+  font-weight: 500;
+}
+
+/* Remove old duration button styles */
+.duration-btn {
+  display: none;
+}
+
+/* Timer States */
+.timer-container.active .timer-display {
+  color: var(--umich-maize);
+}
+
+.timer-container.completed .timer-display {
+  color: #2E7D32;
+}
+
+.timer-container.completed .timer-status {
+  color: #2E7D32;
+  font-weight: bold;
+}
+
+/* Stopwatch Mode */
+.timer-container.stopwatch-mode .timer-display {
+  color: var(--umich-light-blue);
+}
+
+.timer-container.stopwatch-mode.active .timer-display {
+  color: var(--umich-blue);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .study-stats {
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .timer-container {
+    width: 100%;
+  }
+
+  .timer-controls,
+  .timer-mode-controls {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .timer-controls button,
+  .timer-mode-controls button {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .custom-duration {
+    padding: 6px 10px;
+  }
+
+  .duration-input {
+    width: 50px;
+    font-size: 14px;
+  }
+
+  .duration-label {
+    font-size: 14px;
+  }
+}

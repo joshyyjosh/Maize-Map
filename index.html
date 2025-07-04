@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Maize Map</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link rel="stylesheet" href="style.css" />
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#00274C">
+</head>
+<body>
+  <h1>Maize Map</h1>
+
+  <div class="study-stats">
+    <div class="streak-display">
+      <span class="streak-icon">🔥</span>
+      <span class="streak-count">0</span>
+      <span class="streak-text">day streak</span>
+    </div>
+    <div class="timer-container">
+      <div class="timer-mode-controls">
+        <button id="timerMode" class="umich-button secondary active">Timer</button>
+        <button id="stopwatchMode" class="umich-button secondary">Stopwatch</button>
+      </div>
+      <div class="timer-duration-controls">
+        <div class="custom-duration">
+          <input type="number" id="minutesInput" min="1" max="180" value="25" class="duration-input">
+          <span class="duration-label">minutes</span>
+        </div>
+      </div>
+      <div class="timer-display">25:00</div>
+      <div class="timer-controls">
+        <button id="startTimer" class="umich-button primary">Start</button>
+        <button id="pauseTimer" class="umich-button secondary" disabled>Pause</button>
+        <button id="resetTimer" class="umich-button secondary" disabled>Reset</button>
+      </div>
+      <div class="timer-status">Complete a study session to log your streak!</div>
+    </div>
+  </div>
+
+  <div id="filters">
+    <label><input type="checkbox" id="openLate"> Open Late</label>
+    <label><input type="checkbox" id="quiet"> Quiet</label>
+    <label><input type="checkbox" id="nearFood"> Near Food</label>
+    <label><input type="checkbox" id="hasOutlets"> Has Outlets</label>
+  </div>
+
+  <div id="map"></div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="script.js"></script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/service-worker.js')
+          .then(reg => console.log('Service worker registered:', reg))
+          .catch(err => console.log('Service worker registration failed:', err));
+      });
+    }
+  </script>
+</body>
+
+</html>
