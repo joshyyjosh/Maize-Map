@@ -11,34 +11,45 @@
 <body>
   <h1>Maize Map</h1>
 
-  <div class="study-stats">
-    <div class="streak-display">
-      <span class="streak-icon">🔥</span>
-      <span class="streak-count">0</span>
-      <span class="streak-text">day streak</span>
-    </div>
-    <div class="timer-container">
-      <div class="timer-mode-controls">
-        <button id="timerMode" class="umich-button secondary active">Timer</button>
-        <button id="stopwatchMode" class="umich-button secondary">Stopwatch</button>
-      </div>
-      <div class="timer-duration-controls">
-        <div class="custom-duration">
-          <input type="number" id="minutesInput" min="1" max="180" value="25" class="duration-input">
-          <span class="duration-label">minutes</span>
+  <button id="openProgressModal" class="umich-button primary progress-modal-btn">Study Progress</button>
+
+  <!-- Study Progress Modal -->
+  <div id="progressModal" class="progress-modal-overlay" style="display:none;">
+    <div class="progress-modal-content">
+      <button id="closeProgressModal" class="umich-button secondary close-modal-btn">✕</button>
+      <div class="study-progress-card">
+        <h2 class="progress-title">Your Study Progress</h2>
+        <div class="progress-content">
+          <div class="streak-badge" title="Keep your streak going!">
+            <span class="streak-icon">🏆</span>
+            <span class="streak-count">0</span>
+            <span class="streak-text">day streak</span>
+          </div>
+          <div class="timer-container">
+            <div class="timer-display">30:00</div>
+            <div class="timer-mode-controls">
+              <button id="timerMode" class="umich-button primary active">Timer</button>
+              <button id="stopwatchMode" class="umich-button primary">Stopwatch</button>
+            </div>
+            <div class="timer-duration-controls">
+              <div class="custom-duration">
+                <input type="number" id="minutesInput" min="1" max="2880" value="30" class="duration-input">
+                <span class="duration-label">minutes</span>
+              </div>
+            </div>
+            <div class="timer-controls">
+              <button id="startTimer" class="umich-button primary" title="Start"><span>▶</span></button>
+              <button id="pauseTimer" class="umich-button secondary" disabled title="Pause"><span>⏸</span></button>
+              <button id="resetTimer" class="umich-button secondary" disabled title="Reset"><span>⟳</span></button>
+            </div>
+            <div class="timer-status">Complete a study session to log your streak!</div>
+          </div>
         </div>
       </div>
-      <div class="timer-display">25:00</div>
-      <div class="timer-controls">
-        <button id="startTimer" class="umich-button primary">Start</button>
-        <button id="pauseTimer" class="umich-button secondary" disabled>Pause</button>
-        <button id="resetTimer" class="umich-button secondary" disabled>Reset</button>
-      </div>
-      <div class="timer-status">Complete a study session to log your streak!</div>
     </div>
   </div>
 
-  <div id="filters">
+  <div id="filters" class="filters-row">
     <label><input type="checkbox" id="openLate"> Open Late</label>
     <label><input type="checkbox" id="quiet"> Quiet</label>
     <label><input type="checkbox" id="nearFood"> Near Food</label>
@@ -57,6 +68,19 @@
           .catch(err => console.log('Service worker registration failed:', err));
       });
     }
+    // Modal open/close logic
+    document.getElementById('openProgressModal').onclick = function() {
+      document.getElementById('progressModal').style.display = 'flex';
+    };
+    document.getElementById('closeProgressModal').onclick = function() {
+      document.getElementById('progressModal').style.display = 'none';
+    };
+    window.onclick = function(event) {
+      const modal = document.getElementById('progressModal');
+      if (event.target === modal) {
+        modal.style.display = 'none';
+      }
+    };
   </script>
 </body>
 

@@ -385,6 +385,8 @@ const selectedIcon = L.divIcon({
 });
 
 let selectedMarker = null;
+let lasrRandomSpot = null;
+let lastRandomSpot = null;
 
 // Function to find a random open study spot
 function findRandomStudySpot() {
@@ -399,18 +401,19 @@ function findRandomStudySpot() {
   console.log("Filter states:", { openLate, quiet, nearFood, hasOutlets }); // Debug log
 
   // Filter spots based on preferences and current time
-  const availableSpots = studySpots.filter(spot => {
+  let availableSpots = studySpots.filter(spot => {
     const isOpen = isCurrentlyOpen(spot);
     const matchesFilters = (!openLate || spot.openLate) &&
                           (!quiet || spot.quiet) &&
                           (!nearFood || spot.nearFood) &&
                           (!hasOutlets || spot.hasOutlets);
-    
-    console.log(`Spot ${spot.name}: isOpen=${isOpen}, matchesFilters=${matchesFilters}`); // Debug log
     return isOpen && matchesFilters;
   });
 
-  console.log("Available spots:", availableSpots.length); // Debug log
+  // Exclude last selected spot if possible
+  if (lastRandomSpot && availableSpots.length > 1) {
+    availableSpots = availableSpots.filter(spot => spot.name !== lastRandomSpot.name);
+  }
 
   if (availableSpots.length === 0) {
     const alertBox = document.createElement('div');
@@ -435,6 +438,7 @@ function findRandomStudySpot() {
 
   // Select random spot
   const randomSpot = availableSpots[Math.floor(Math.random() * availableSpots.length)];
+  lastRandomSpot = randomSpot;
   console.log("Selected spot:", randomSpot.name); // Debug log
 
   // Create a smooth zoom animation to the spot

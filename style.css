@@ -89,24 +89,28 @@ h1 {
 .umich-button.primary {
   background: var(--umich-blue);
   color: white;
+  transition: background-color 0.2s ease;
 }
 
-.umich-button.primary:hover {
+/* Only apply hover styles if NOT active */
+.umich-button.primary:not(.active):hover {
   background: var(--umich-light-blue);
-  transform: translateY(-2px);
   box-shadow: 0 4px 8px rgba(0,0,0,0.2);
 }
 
 .umich-button.secondary {
   background: var(--umich-maize);
-  color: var(--umich-blue);
+  color: white;
+  transition: background-color 0.2s ease, transform 0.2s ease;
 }
 
+/* Secondary button hover always applies */
 .umich-button.secondary:hover {
   background: var(--umich-light-maize);
   transform: translateY(-2px);
   box-shadow: 0 4px 8px rgba(0,0,0,0.2);
 }
+
 
 /* Popup Styling */
 .umich-popup {
@@ -402,11 +406,17 @@ h1 {
   display: flex;
   gap: 10px;
   margin-bottom: 10px;
+  text-align: center;
 }
 
 .timer-mode-controls button {
   flex: 1;
   min-width: 100px;
+  height: 40px; /* or whatever height you want */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
   opacity: 0.7;
   transition: all 0.2s;
 }
@@ -461,10 +471,6 @@ h1 {
   display: none;
 }
 
-/* Timer States */
-.timer-container.active .timer-display {
-  color: var(--umich-maize);
-}
 
 .timer-container.completed .timer-display {
   color: #2E7D32;
@@ -518,5 +524,273 @@ h1 {
 
   .duration-label {
     font-size: 14px;
+  }
+}
+
+/* Study Progress Card */
+.study-progress-card {
+  background: linear-gradient(135deg, #f8fafc 0%, #e3e9f6 100%);
+  border-radius: 18px;
+  box-shadow: 0 6px 24px rgba(0,0,0,0.10);
+  padding: 32px 24px 24px 24px;
+  margin-bottom: 32px;
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+}
+.progress-title {
+  text-align: center;
+  font-size: 2em;
+  color: var(--umich-blue);
+  margin-bottom: 18px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  margin-top: 5px;
+}
+.progress-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 32px;
+}
+
+/* Streak Badge */
+.streak-badge {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 70% 30%, #ffe599 60%, #ffcb05 100%);
+  box-shadow: 0 0 16px 2px #ffe59999, 0 2px 8px rgba(0,0,0,0.08);
+  border: 3px solid var(--umich-maize);
+  position: relative;
+  transition: box-shadow 0.3s;
+}
+.streak-badge:hover {
+  box-shadow: 0 0 32px 8px #ffcb0599, 0 2px 8px rgba(0,0,0,0.12);
+}
+.streak-icon {
+  font-size: 2.2em;
+  margin-bottom: 4px;
+}
+.streak-count {
+  font-size: 2.1em;
+  font-weight: bold;
+  color: var(--umich-blue);
+  margin-bottom: 2px;
+}
+.streak-text {
+  font-size: 1em;
+  color: var(--umich-blue);
+  opacity: 0.8;
+}
+
+/* Timer Progress SVG */
+.timer-progress {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 0;
+  width: 120px;
+  height: 120px;
+  pointer-events: none;
+}
+.progress-bg {
+  fill: none;
+  stroke: #e3e9f6;
+  stroke-width: 10;
+}
+.progress-bar {
+  fill: none;
+  stroke: var(--umich-blue);
+  stroke-width: 10;
+  stroke-linecap: round;
+  stroke-dasharray: 339.292;
+  stroke-dashoffset: 0;
+  transition: stroke-dashoffset 0.5s linear;
+}
+.timer-container {
+  position: relative;
+  background: var(--umich-gray);
+  border-radius: 16px;
+  min-width: 220px;
+  padding: 24px 16px 16px 16px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+.timer-display {
+  font-size: 2.2em;
+  font-weight: bold;
+  color: var(--umich-blue);
+  font-family: monospace;
+  text-align: center;
+  z-index: 1;
+  margin: 0 0 8px 0;
+}
+.timer-controls {
+  display: flex;
+  gap: 8px;
+  margin-top: 6px;
+}
+.timer-controls button {
+  min-width: 40px;
+  font-size: 1.2em;
+  padding: 8px 10px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.timer-status {
+  font-size: 0.95em;
+  color: var(--umich-light-blue);
+  text-align: center;
+  font-style: italic;
+  margin-top: 4px;
+}
+
+/* Filters Row */
+.filters-row {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  gap: 24px;
+  background: white;
+  padding: 18px 0 18px 0;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.08);
+  margin-bottom: 24px;
+  border: 2px solid var(--umich-blue);
+}
+.filters-row label {
+  margin: 0;
+  font-size: 1.1em;
+  font-weight: 500;
+  color: var(--umich-blue);
+  background: none;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 8px;
+  transition: background 0.2s;
+}
+.filters-row label:hover {
+  background: var(--umich-light-maize);
+}
+
+@media (max-width: 768px) {
+  .study-progress-card {
+    padding: 16px 6px 12px 6px;
+  }
+  .progress-content {
+    flex-direction: column;
+    gap: 18px;
+  }
+  .filters-row {
+    flex-direction: column;
+    gap: 10px;
+    padding: 10px 0;
+  }
+  .timer-container {
+    min-width: 0;
+    width: 100%;
+    padding: 12px 4px 8px 4px;
+  }
+  .streak-badge {
+    width: 90px;
+    height: 90px;
+  }
+  .timer-progress {
+    width: 90px;
+    height: 90px;
+  }
+}
+
+/* Study Progress Modal Overlay */
+.progress-modal-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  transition: background 0.2s;
+}
+.progress-modal-content {
+  background: #fff;
+  border-radius: 18px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+  padding: 0 0 0 0;
+  max-width: 650px;
+  width: 95vw;
+  max-height: 90vh;
+  overflow-y: auto;
+  position: relative;
+  animation: modalPopIn 0.25s cubic-bezier(.4,1.6,.6,1) both;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+}
+@keyframes modalPopIn {
+  from { transform: scale(0.95) translateY(30px); opacity: 0; }
+  to { transform: scale(1) translateY(0); opacity: 1; }
+}
+.close-modal-btn {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  z-index: 10;
+  font-size: 1.3em;
+  padding: 6px 12px;
+  border-radius: 50%;
+  min-width: 0;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.progress-modal-content .study-progress-card {
+  margin: 0;
+  box-shadow: none;
+  padding-top: 32px;
+  padding-bottom: 32px;
+}
+
+/* Study Progress Button */
+.progress-modal-btn {
+  position: absolute;
+  top: 32px;
+  right: 32px;
+  z-index: 100;
+  font-size: 1.1em;
+  padding: 10px 22px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+@media (max-width: 768px) {
+  .progress-modal-btn {
+    top: 12px;
+    right: 12px;
+    font-size: 1em;
+    padding: 8px 14px;
+  }
+  .progress-modal-content {
+    max-width: 99vw;
+    padding: 0;
+  }
+  .close-modal-btn {
+    top: 8px;
+    right: 8px;
+    width: 32px;
+    height: 32px;
+    font-size: 1.1em;
   }
 }
