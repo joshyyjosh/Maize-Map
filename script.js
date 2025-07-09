@@ -189,6 +189,21 @@ const studySpots = [
     "Features:\n" +
     "• Silence study spaces\n" +
     "• Law department\n"
+  },
+  {
+    name: "Central Campus Classroom Building",
+    location: [42.27801912879595, -83.73438962703194],
+    openLate: false,
+    quiet: true,
+    nearFood: true,
+    hasOutlets: true,
+    description:
+    "Hours: \n" + 
+    "Monday-Friday\t7 AM - 10 PM \n" + 
+    "Saturday\t9 AM - 6PM\n\n" + 
+    "Sunday\t9AM - 10PM\n" + 
+    "Features:\n" + 
+    "• Beautiful views on 3rd floor"
   }
 ];
 
@@ -229,7 +244,27 @@ buttonContainer.appendChild(locationButton);
 buttonContainer.appendChild(randomButton);
 document.getElementById('filters').appendChild(buttonContainer);
 
-// Function to add study spot markers
+// --- FAVORITES SYSTEM ---
+function getFavoriteSpots() {
+  return JSON.parse(localStorage.getItem('favoriteSpots') || '[]');
+}
+function setFavoriteSpots(favs) {
+  localStorage.setItem('favoriteSpots', JSON.stringify(favs));
+}
+function isFavoriteSpot(name) {
+  return getFavoriteSpots().includes(name);
+}
+function toggleFavoriteSpot(name) {
+  let favs = getFavoriteSpots();
+  if (favs.includes(name)) {
+    favs = favs.filter(n => n !== name);
+  } else {
+    favs.push(name);
+  }
+  setFavoriteSpots(favs);
+}
+
+// --- MODIFIED addStudySpotMarkers ---
 function addStudySpotMarkers() {
   // Clear existing markers
   studySpotMarkers.forEach(marker => map.removeLayer(marker));
@@ -240,16 +275,20 @@ function addStudySpotMarkers() {
   const quiet = document.getElementById('quiet').checked;
   const nearFood = document.getElementById('nearFood').checked;
   const hasOutlets = document.getElementById('hasOutlets').checked;
+  const showFavorites = document.getElementById('showFavorites').checked;
+  const favoriteSpots = getFavoriteSpots();
 
   // Filter and add markers
   studySpots.forEach(spot => {
     if ((!openLate || spot.openLate) &&
         (!quiet || spot.quiet) &&
         (!nearFood || spot.nearFood) &&
-        (!hasOutlets || spot.hasOutlets)) {
+        (!hasOutlets || spot.hasOutlets) &&
+        (!showFavorites || favoriteSpots.includes(spot.name))) {
+      const isFav = favoriteSpots.includes(spot.name);
       const popupContent = `
         <div class="umich-popup">
-          <h3>${spot.name}</h3>
+          <h3>${spot.name} <button class="fav-btn" data-spot="${spot.name}" title="${isFav ? 'Unfavorite' : 'Favorite'}">${isFav ? '⭐' : '☆'}</button></h3>
           <div class="popup-features">
             ${spot.openLate ? '<span class="feature-tag open-late">Open Late</span>' : ''}
             ${spot.quiet ? '<span class="feature-tag quiet">Quiet</span>' : ''}
@@ -272,6 +311,7 @@ document.getElementById('openLate').addEventListener('change', addStudySpotMarke
 document.getElementById('quiet').addEventListener('change', addStudySpotMarkers);
 document.getElementById('nearFood').addEventListener('change', addStudySpotMarkers);
 document.getElementById('hasOutlets').addEventListener('change', addStudySpotMarkers);
+document.getElementById('showFavorites').addEventListener('change', addStudySpotMarkers);
 
 // Get user location
 function getUserLocation() {
@@ -397,8 +437,10 @@ function findRandomStudySpot() {
   const quiet = document.getElementById('quiet').checked;
   const nearFood = document.getElementById('nearFood').checked;
   const hasOutlets = document.getElementById('hasOutlets').checked;
+  const showFavorites = document.getElementById('showFavorites').checked;
+  const favoriteSpots = getFavoriteSpots();
 
-  console.log("Filter states:", { openLate, quiet, nearFood, hasOutlets }); // Debug log
+  console.log("Filter states:", { openLate, quiet, nearFood, hasOutlets, showFavorites }); // Debug log
 
   // Filter spots based on preferences and current time
   let availableSpots = studySpots.filter(spot => {
@@ -728,3 +770,24 @@ const streakSystem = new StreakSystem();
 function updateStreak() {
   streakSystem.updateStreak();
 }
+
+// --- FAVORITE BUTTON HANDLING ---
+map.on('popupopen', function(e) {
+  const btn = e.popup._contentNode.querySelector('.fav-btn');
+  if (btn) {
+    btn.onclick = function(ev) {
+      ev.stopPropagation();
+      const spotName = btn.getAttribute('data-spot');
+      toggleFavoriteSpot(spotName);
+      addStudySpotMarkers();
+      // Reopen popup for the same marker
+      setTimeout(() => {
+        studySpotMarkers.forEach(marker => {
+          if (marker.getLatLng().equals(e.popup._latlng)) {
+            marker.openPopup();
+          }
+        });
+      }, 100);
+    };
+  }
+});

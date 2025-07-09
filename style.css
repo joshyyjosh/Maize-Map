@@ -685,6 +685,32 @@ h1 {
   background: var(--umich-light-maize);
 }
 
+.favorites-toggle {
+  display: flex;
+  align-items: center;
+  font-size: 1.1em;
+  font-weight: 600;
+  color: var(--umich-blue);
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: 8px;
+  transition: background 0.2s;
+  cursor: pointer;
+}
+.favorites-toggle .star-icon {
+  font-size: 1.2em;
+  color: #bbb;
+  transition: color 0.2s;
+}
+.favorites-toggle input[type="checkbox"]:checked + .star-icon {
+  color: #FFD700;
+  text-shadow: 0 0 6px #FFD70088;
+}
+.favorites-toggle input[type="checkbox"] {
+  accent-color: #FFD700;
+  margin-right: 2px;
+}
+
 @media (max-width: 768px) {
   .study-progress-card {
     padding: 16px 6px 12px 6px;
