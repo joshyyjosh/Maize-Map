@@ -219,6 +219,7 @@ const map = L.map('map', {
 }).setView([42.2734, -83.7324], 13);
 let userMarker = null;
 let studySpotMarkers = [];
+let userLatLng = null;
 
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
   attribution: '&copy; OpenStreetMap contributors'
@@ -234,7 +235,7 @@ function createUMichButton(text, onClick, isPrimary = false) {
 }
 
 // Replace existing button creation with styled buttons
-const locationButton = createUMichButton('Show My Location', getUserLocation, false);
+const locationButton = createUMichButton('Show My Location', getUserLocationAndUpdate, false);
 const randomButton = createUMichButton('Find Random Study Spot', findRandomStudySpot, true);
 
 // Create a button container for better layout
@@ -264,6 +265,45 @@ function toggleFavoriteSpot(name) {
   setFavoriteSpots(favs);
 }
 
+// Get user location and update userLatLng
+function getUserLocationAndUpdate() {
+  if ("geolocation" in navigator) {
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        userLatLng = [position.coords.latitude, position.coords.longitude];
+        getUserLocation(position); // existing marker logic
+        addStudySpotMarkers();
+      },
+      (error) => {
+        userLatLng = null;
+        getUserLocation(); // fallback marker logic
+        addStudySpotMarkers();
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 5000,
+        maximumAge: 0
+      }
+    );
+  } else {
+    userLatLng = null;
+    getUserLocation();
+    addStudySpotMarkers();
+  }
+}
+
+// Haversine formula for distance in km
+function getDistanceKm(lat1, lon1, lat2, lon2) {
+  const R = 6371;
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLon = (lon2 - lon1) * Math.PI / 180;
+  const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+            Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+            Math.sin(dLon/2) * Math.sin(dLon/2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+  return R * c;
+}
+
 // --- MODIFIED addStudySpotMarkers ---
 function addStudySpotMarkers() {
   // Clear existing markers
@@ -276,33 +316,53 @@ function addStudySpotMarkers() {
   const nearFood = document.getElementById('nearFood').checked;
   const hasOutlets = document.getElementById('hasOutlets').checked;
   const showFavorites = document.getElementById('showFavorites').checked;
+  const walkingDistance = document.getElementById('walkingDistance').checked;
   const favoriteSpots = getFavoriteSpots();
 
-  // Filter and add markers
-  studySpots.forEach(spot => {
-    if ((!openLate || spot.openLate) &&
-        (!quiet || spot.quiet) &&
-        (!nearFood || spot.nearFood) &&
-        (!hasOutlets || spot.hasOutlets) &&
-        (!showFavorites || favoriteSpots.includes(spot.name))) {
-      const isFav = favoriteSpots.includes(spot.name);
-      const popupContent = `
-        <div class="umich-popup">
-          <h3>${spot.name} <button class="fav-btn" data-spot="${spot.name}" title="${isFav ? 'Unfavorite' : 'Favorite'}">${isFav ? '⭐' : '☆'}</button></h3>
-          <div class="popup-features">
-            ${spot.openLate ? '<span class="feature-tag open-late">Open Late</span>' : ''}
-            ${spot.quiet ? '<span class="feature-tag quiet">Quiet</span>' : ''}
-            ${spot.nearFood ? '<span class="feature-tag food">Near Food</span>' : ''}
-            ${spot.hasOutlets ? '<span class="feature-tag outlets">Has Outlets</span>' : ''}
-          </div>
-          <div class="popup-description">${spot.description}</div>
+  // Prepare spots with distance if user location is available
+  let filteredSpots = studySpots
+    .map(spot => {
+      let distance = null;
+      if (userLatLng) {
+        distance = getDistanceKm(userLatLng[0], userLatLng[1], spot.location[0], spot.location[1]);
+      }
+      return { ...spot, distance };
+    })
+    .filter(spot =>
+      (!openLate || spot.openLate) &&
+      (!quiet || spot.quiet) &&
+      (!nearFood || spot.nearFood) &&
+      (!hasOutlets || spot.hasOutlets) &&
+      (!showFavorites || favoriteSpots.includes(spot.name)) &&
+      (!walkingDistance || (spot.distance !== null && spot.distance <= 1))
+    );
+
+  // Sort by distance if available
+  if (userLatLng) {
+    filteredSpots.sort((a, b) => (a.distance ?? 9999) - (b.distance ?? 9999));
+  }
+
+  // Add markers
+  filteredSpots.forEach(spot => {
+    const isFav = favoriteSpots.includes(spot.name);
+    const distanceStr = spot.distance !== null ? `<span class='distance-info'>${spot.distance < 1 ? (spot.distance*1000).toFixed(0) + ' m' : spot.distance.toFixed(2) + ' km'}</span>` : '';
+    const popupContent = `
+      <div class="umich-popup">
+        <h3>${spot.name} <button class="fav-btn" data-spot="${spot.name}" title="${isFav ? 'Unfavorite' : 'Favorite'}">${isFav ? '⭐' : '☆'}</button></h3>
+        ${distanceStr}
+        <div class="popup-features">
+          ${spot.openLate ? '<span class="feature-tag open-late">Open Late</span>' : ''}
+          ${spot.quiet ? '<span class="feature-tag quiet">Quiet</span>' : ''}
+          ${spot.nearFood ? '<span class="feature-tag food">Near Food</span>' : ''}
+          ${spot.hasOutlets ? '<span class="feature-tag outlets">Has Outlets</span>' : ''}
         </div>
-      `;
-      const marker = L.marker(spot.location)
-        .addTo(map)
-        .bindPopup(popupContent);
-      studySpotMarkers.push(marker);
-    }
+        <div class="popup-description">${spot.description}</div>
+      </div>
+    `;
+    const marker = L.marker(spot.location)
+      .addTo(map)
+      .bindPopup(popupContent);
+    studySpotMarkers.push(marker);
   });
 }
 
@@ -312,47 +372,35 @@ document.getElementById('quiet').addEventListener('change', addStudySpotMarkers)
 document.getElementById('nearFood').addEventListener('change', addStudySpotMarkers);
 document.getElementById('hasOutlets').addEventListener('change', addStudySpotMarkers);
 document.getElementById('showFavorites').addEventListener('change', addStudySpotMarkers);
+document.getElementById('walkingDistance').addEventListener('change', addStudySpotMarkers);
 
 // Get user location
-function getUserLocation() {
-  if ("geolocation" in navigator) {
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        const { latitude, longitude } = position.coords;
-        
-        // Check if user is within Ann Arbor bounds
-        const isInBounds = latitude >= 42.20 && latitude <= 42.35 &&
-                          longitude >= -83.85 && longitude <= -83.65;
-        
-        // Remove existing user marker if it exists
-        if (userMarker) {
-          map.removeLayer(userMarker);
-        }
+function getUserLocation(position) {
+  if (position) {
+    const { latitude, longitude } = position.coords;
+    
+    // Check if user is within Ann Arbor bounds
+    const isInBounds = latitude >= 42.20 && latitude <= 42.35 &&
+                      longitude >= -83.85 && longitude <= -83.65;
+    
+    // Remove existing user marker if it exists
+    if (userMarker) {
+      map.removeLayer(userMarker);
+    }
 
-        // Add new user marker
-        userMarker = L.marker([latitude, longitude])
-          .addTo(map)
-          .bindPopup(isInBounds ? "You are here" : "You are outside Ann Arbor")
-          .openPopup();
+    // Add new user marker
+    userMarker = L.marker([latitude, longitude])
+      .addTo(map)
+      .bindPopup(isInBounds ? "You are here" : "You are outside Ann Arbor")
+      .openPopup();
 
-        // Only center map if user is in bounds
-        if (isInBounds) {
-          map.setView([latitude, longitude], 15);
-        } else {
-          alert("You are currently outside the Ann Arbor area. The map is restricted to Ann Arbor.");
-          map.setView([42.2734, -83.7324], 13); // Reset to center of Ann Arbor
-        }
-      },
-      (error) => {
-        console.error("Error getting location:", error);
-        alert("Unable to get your location. Please enable location services to see your position on the map.");
-      },
-      {
-        enableHighAccuracy: true,
-        timeout: 5000,
-        maximumAge: 0
-      }
-    );
+    // Only center map if user is in bounds
+    if (isInBounds) {
+      map.setView([latitude, longitude], 15);
+    } else {
+      alert("You are currently outside the Ann Arbor area. The map is restricted to Ann Arbor.");
+      map.setView([42.2734, -83.7324], 13); // Reset to center of Ann Arbor
+    }
   } else {
     alert("Geolocation is not supported by your browser");
   }
@@ -438,6 +486,7 @@ function findRandomStudySpot() {
   const nearFood = document.getElementById('nearFood').checked;
   const hasOutlets = document.getElementById('hasOutlets').checked;
   const showFavorites = document.getElementById('showFavorites').checked;
+  const walkingDistance = document.getElementById('walkingDistance').checked;
   const favoriteSpots = getFavoriteSpots();
 
   console.log("Filter states:", { openLate, quiet, nearFood, hasOutlets, showFavorites }); // Debug log
